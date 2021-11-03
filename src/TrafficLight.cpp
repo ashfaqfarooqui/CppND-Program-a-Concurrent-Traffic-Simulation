@@ -1,6 +1,7 @@
 #include "TrafficLight.h"
 #include <iostream>
 #include <random>
+#include <thread>
 
 /* Implementation of class "MessageQueue" */
 
@@ -42,14 +43,41 @@ void TrafficLight::simulate() {
   // FP.2b : Finally, the private method „cycleThroughPhases“ should be started
   // in a thread when the public method „simulate“ is called. To do this, use
   // the thread queue in the base class.
+  //
+  threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases));
 }
 
 // virtual function which is executed in a thread
 void TrafficLight::cycleThroughPhases() {
-  // FP.2a : Implement the function with an infinite loop that measures the time
-  // between two loop cycles and toggles the current phase of the traffic light
-  // between red and green and sends an update method to the message queue using
-  // move semantics. The cycle duration should be a random value between 4 and 6
-  // seconds. Also, the while-loop should use std::this_thread::sleep_for to
-  // wait 1ms between two cycles.
+  // FP.2a : Implement the function with an infinite loop that   measures the
+  // time between two loop cycles and toggles the current phase of the traffic
+  // light between red and green and sends an update method to the message queue
+  // using move semantics. The cycle duration should be a random value between 4
+  // and 6 seconds. Also, the while-loop should use std::this_thread::sleep_for
+  // to wait 1ms between two cycles.
+  srand(time(NULL));
+  std::random_device rd;  // obtain a random number from hardware
+  std::mt19937 gen(rd()); // seed the generator
+  std::uniform_int_distribution<> dist(4000, 6000); // define the range
+  auto StartTime = std::chrono::system_clock::now();
+  while (true) {
+    using namespace std::chrono_literals;
+
+    auto EndTime = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime -
+                                                                      StartTime)
+                    .count();
+
+    auto randTime = dist(gen);
+    if (diff > randTime) {
+
+      if (_currentPhase == TrafficLightPhase::green) {
+        _currentPhase = TrafficLightPhase::red;
+      } else if (_currentPhase == TrafficLightPhase::red) {
+        _currentPhase = TrafficLightPhase::green;
+      }
+    }
+
+    std::this_thread::sleep_for(1ms);
+  }
 }
