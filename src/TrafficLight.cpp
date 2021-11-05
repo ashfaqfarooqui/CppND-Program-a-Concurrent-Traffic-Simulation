@@ -51,7 +51,7 @@ void TrafficLight::simulate() {
   // in a thread when the public method „simulate“ is called. To do this, use
   // the thread queue in the base class.
   //
-  threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases));
+  threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases, this));
 }
 
 // virtual function which is executed in a thread
@@ -78,13 +78,18 @@ void TrafficLight::cycleThroughPhases() {
     auto randTime = dist(gen);
     if (diff > randTime) {
 
+      std::cout << "change phases";
       if (_currentPhase == TrafficLightPhase::green) {
         _currentPhase = TrafficLightPhase::red;
       } else if (_currentPhase == TrafficLightPhase::red) {
         _currentPhase = TrafficLightPhase::green;
       }
+
+      _messageQueue.send(std::move(_currentPhase));
+
+      StartTime = std::chrono::system_clock::now();
+
+      std::this_thread::sleep_for(1ms);
     }
-    _messageQueue.send(std::move(_currentPhase));
-    std::this_thread::sleep_for(1ms);
   }
 }
