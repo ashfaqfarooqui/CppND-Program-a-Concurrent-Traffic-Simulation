@@ -67,18 +67,20 @@ void TrafficLight::cycleThroughPhases() {
   std::mt19937 gen(rd()); // seed the generator
   std::uniform_int_distribution<> dist(4000, 6000); // define the range
   auto StartTime = std::chrono::system_clock::now();
+
+  auto EndTime = std::chrono::system_clock::now();
+  long diff;
+  auto randTime = dist(gen);
   while (true) {
     using namespace std::chrono_literals;
 
-    auto EndTime = std::chrono::system_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime -
-                                                                      StartTime)
-                    .count();
+    EndTime = std::chrono::system_clock::now();
+    diff = std::chrono::duration_cast<std::chrono::milliseconds>(EndTime -
+                                                                 StartTime)
+               .count();
 
-    auto randTime = dist(gen);
     if (diff > randTime) {
 
-      std::cout << "change phases";
       if (_currentPhase == TrafficLightPhase::green) {
         _currentPhase = TrafficLightPhase::red;
       } else if (_currentPhase == TrafficLightPhase::red) {
@@ -88,8 +90,7 @@ void TrafficLight::cycleThroughPhases() {
       _messageQueue.send(std::move(_currentPhase));
 
       StartTime = std::chrono::system_clock::now();
-
-      std::this_thread::sleep_for(1ms);
     }
+    std::this_thread::sleep_for(1ms);
   }
 }
