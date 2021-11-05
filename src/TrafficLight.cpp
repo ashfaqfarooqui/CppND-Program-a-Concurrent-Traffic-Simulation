@@ -10,6 +10,14 @@ template <typename T> T MessageQueue<T>::receive() {
   // and_condition.wait() to wait for and receive new messages and pull them
   // from the queue using move semantics.
   // The received object should then be returned by the receive function.
+
+  std::unique_lock<std::mutex> lock(_mutex);
+  _condition.wait(lock);
+
+  T msg = std::move(_queue.back());
+  _queue.pop_back();
+
+  return msg;
 }
 template <typename T> void MessageQueue<T>::send(T &&msg) {
   // FP.4a : The method send should use the mechanisms
@@ -31,6 +39,9 @@ void TrafficLight::waitForGreen() {
   // infinite while-loop runs and repeatedly calls the receive function on the
   // message queue. Once it receives TrafficLightPhase::green, the method
   // returns.
+
+  while (_messageQueue.receive() != TrafficLightPhase::green) {
+  }
 }
 
 TrafficLightPhase TrafficLight::getCurrentPhase() { return _currentPhase; }
