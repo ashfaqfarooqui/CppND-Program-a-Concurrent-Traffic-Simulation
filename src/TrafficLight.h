@@ -17,14 +17,14 @@ class Vehicle;
 // private members.
 
 enum TrafficLightPhase { red, green };
-class MessageQueue {
+template <class T> class MessageQueue {
 public:
-  TrafficLightPhase receive();
+  T receive();
 
-  void send(TrafficLightPhase &&msg);
+  void send(T &&msg);
 
 private:
-  std::deque<TrafficLightPhase> _queue;
+  std::deque<T> _queue;
   std::mutex _mutex;
   std::condition_variable _condition;
 };
@@ -61,6 +61,7 @@ private:
   TrafficLightPhase _currentPhase;
   std::condition_variable _condition;
   std::mutex _mutex;
+  MessageQueue<TrafficLightPhase> _messageQueue;
 };
 
 #endif
